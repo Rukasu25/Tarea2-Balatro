@@ -158,71 +158,77 @@ void imprimirMano(nodomazo* mano) {
         mano = mano->sig;
     }
 }
+void imprimirMazo(nodomazo* mazo) {
+    cout << "Cartas en el mazo:" << endl;
+    while (mazo != nullptr) {
+        cout << mazo->mano.Palo << mazo->mano.Categoria << " ";
+        mazo = mazo->sig;
+    }
+    cout << endl;
+}
+
+
 
 //esta funcion permite al jugador jugar o descartar su mano, seleccionando a lo más 5 cartas de su mano
-/*
-void jugarmano(arbolpinta* arboles[], nodomazo* &mano){
+
+void jugarmano(arbolpinta* arboles[], nodomazo* &mano, int &manos, int &descartes){
     int seleccion[5];
-    int numSeleccion = 0;
-    cout << "Seleccione hasta 5 cartas de su mano para jugar:" << endl;
+    char palo;
+    int cartaSeleccion = 0; //cantidad de cartas a seleccionar
+    cout << "Seleccione a lo mas 5 cartas de su mano para jugar:" << endl;
+    int categoria;
+    char decision; //J para jugar, D para descartar
+    int indice; //indice de la(s) carta(s) a seleccionar
+    /*puntaje de cada categoria*/
+    int HighCard = 50; //carta mas alta
+    int Pair = 40; //par
+    int TwoPair = 80; //doble par
+    int ThreeOfAKind = 120; //Tercia
+    int Straight = 150; //escalera
+    int Flush = 200; //color
+    int FourOfAKind = 400; //poker
+    int FullHouse = 300; //Full House
+    int StraightFlush = 500; //Escalera corrida
+    int RoyalFlush = 1000; //Escalera real
+    int FiveOfAKind = 800; //quintilla
+
+    cout << "ingrese J o para jugar o ingrese D para descartar cartas, un numero a lo mas 5 para la cantidad de cartas a seleccionar y despues, los indices de las cartas seleccionadas: ";
+
+
+
     imprimirMano(mano);
-    while (numSeleccion < 5) {
-        int opcion;
-        cout << "Carta " << numSeleccion + 1 << ": ";
-        cin >> opcion;
-        if (opcion == 0) {
-            break;
-        }
-        if (opcion < 1 || opcion > 8) {
-            cout << "Opcion invalida, intente de nuevo." << endl;
+    while (cartaSeleccion <= 5){
+        cin >> decision >> cartaSeleccion >> indice;
+        if (decision != 'J' & decision != 'D'){
+            cout << "Decision invalida, intente de nuevo" << endl;
             continue;
         }
-        bool yaSeleccionada = false;
-        for (int i = 0; i < numSeleccion; i++) {
-            if (seleccion[i] == opcion) {
-                yaSeleccionada = true;
-                break;
+        if (indice < 1 || indice > 8){
+            cout << "Indice invalido, intente de nuevo" << endl;
+            continue;
+        }
+        if (decision = 'J'){
+            //se juega la(s) carta(s), estas anotan puntaje dependiendo de su categoria y la combinacion de cartas jugadas
+            nodomazo* temp = mano;
+            for (int i = 1; i < indice; i++){
+                if (temp == nullptr){
+                    cout << "Indice invalido, intente de nuevo" << endl;
+                    break;
+                }
+                temp = temp->sig;
+            }
+            if (temp == nullptr){
+                continue;
+            }
+            categoria = temp->mano.Categoria;
+            palo = temp->mano.Palo;
+            int paloIndice;
+            if (palo == 'C'){
+            //CHECKPOINT, aqui quedan los avances de hoy 10/10/2025
             }
         }
-        if (yaSeleccionada) {
-            cout << "Carta ya seleccionada, intente de nuevo." << endl;
-            continue;
-        }
-        seleccion[numSeleccion] = opcion;
-        numSeleccion++;
     }
-    //jugar las cartas seleccionadas
-    nodomazo* actual = mano;
-    nodomazo* anterior = nullptr;
-    for (int i = 0; i < numSeleccion; i++) {
-        int contador = 1;
-        while (actual != nullptr && contador < seleccion[i]) {
-            anterior = actual;
-            actual = actual->sig;
-            contador++;
-        }
-        if (actual == nullptr) {
-            cout << "Error al seleccionar la carta." << endl;
-            return;
-        }
-        //marcar la carta como jugada
-        actual->mano.Jugada = true;
-        //eliminar la carta de la mano
-        if (anterior == nullptr) {
-            mano = actual->sig;
-            delete actual;
-            actual = mano;
-        } else {
-            anterior->sig = actual->sig;
-            delete actual;
-            actual = anterior->sig;
-        }
-        anterior = nullptr; //reiniciar el puntero anterior para la siguiente iteracion
-    }
-    cout << "Cartas jugadas." << endl;
-
-    */
-
+}
 
     
 
@@ -237,10 +243,12 @@ int main(){
     arbolpinta* arboles[4] = {nullptr, nullptr, nullptr, nullptr};
     nodomazo* mazo = nullptr;
     nodomazo* mano = nullptr;
+    int manos = 4;
+    int descartes = 3;
     barajar(mazo, arboles);
     repartir(mazo, mano);
     imprimirMano(mano);
-    //jugarmano(arboles, mano);
+    jugarmano(arboles, mano, manos, descartes);
 
 
 
