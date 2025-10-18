@@ -212,7 +212,7 @@ void mostrarMano(nodoMazo *mano){
 }
 
 //funcion para barajar las cartas y crear la lista enlazada
-void barajar(nodoMazo* &mazo) {
+void Barajar(nodoMazo* &mazo) {
     carta cartas[52];
     int indice = 0;
     char palos[4] = {'C', 'D', 'E', 'T'};
@@ -242,7 +242,7 @@ void barajar(nodoMazo* &mazo) {
 }
 
 //esto reparte las cartas que están en el mazo a la mano
-void repartir(nodoMazo *&mazo, nodoMazo *&mano, int max, arbolPinta *arboles[]){
+void Repartir(nodoMazo *&mazo, nodoMazo *&mano, int max, arbolPinta *arboles[]){
     int cartasEnMano=listSize(mano); //vemos cuantas cartas hay en la mano
     int cartasARepartir=max-cartasEnMano;//vemos cuantas se repartirán
     for(int i=0; i<cartasARepartir; i++){
@@ -257,7 +257,25 @@ void repartir(nodoMazo *&mazo, nodoMazo *&mano, int max, arbolPinta *arboles[]){
     ordenarManoDesc(mano);//finalmente se ordena la mano
 }
 
-void eliminarSeleccionadas
+//esta funcion elimina las cartas por su índice, de forma descendiente
+void eliminarSeleccionadas(nodoMazo *&mano, int indices[], int cantidad){
+    int i;
+    //primero se ordena descendientemente
+    for(i=0; i<cantidad; i++){
+        for(int j=i+1; j<cantidad; j++){
+            if(indices[j]>indices[i]){
+                int aux=indices[j];
+                indices[j]=indices[i];
+                indices[i]=aux;
+            }
+        }
+    }
+
+    //y ahora se borran las cartas
+    for(i=0; i<cantidad;i++){
+        eliminarPorIndice(mano, indices[i]);
+    }
+}
 
 /*FALTA VER LOS TIPOS DE MANO
 
