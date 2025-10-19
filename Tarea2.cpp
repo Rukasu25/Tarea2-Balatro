@@ -158,6 +158,7 @@ void eliminarPorIndice(nodoMazo* &mazo, int indice) {
     delete aEliminar;
 }
 
+
 //funcion para determinar el largo del mazo/lista
 int listSize(nodoMazo *mazo){
     int count=0;
@@ -345,22 +346,7 @@ bool IsFourOfAKind(nodoMazo* mano){
     return false;
 }
 
-bool IsFiveOfAKind(nodoMazo* mano){
-    if (mano == nullptr) return false;
-    int counts[14] = {0};
-    nodoMazo* aux = mano;
-    while (aux != nullptr){
-        int c = aux->mano.Categoria;
-        if (c >= 1 && c <= 13) counts[c]++;
-        aux = aux->sig;
-    }
-    for (int i = 1; i <= 13; ++i) if (counts[i] >= 5) return true;
-    return false;
-}
 
-bool IsFullHouse(nodoMazo* mano){
-    return IsThreeOfAKind(mano) && IsPair(mano);
-}
 
 
 bool IsStraight(nodoMazo* mano){
@@ -409,45 +395,12 @@ bool IsFlush(nodoMazo* mano){
     return true;
 }
 
-bool IsStraightFlush(nodoMazo* mano){
-    return IsStraight(mano) && IsFlush(mano);
-}
-
-bool IsRoyalFlush(nodoMazo* mano){
-    nodoMazo* aux=mano;
-    int categorias[5];
-    int index=0;
-    while (aux!=NULL && index<5){
-        categorias[index]=aux->mano.Categoria;
-        aux=aux->sig;
-        index++;
-    }
-    //verificar si las categorias son 10,11,12,13,1
-    bool tieneDiez=false, tieneOnce=false, tieneDoce=false, tieneTrece=false, tieneAs=false;
-    for (int i=0; i<index; i++){
-        if (categorias[i]==10) tieneDiez=true;
-        else if (categorias[i]==11) tieneOnce=true;
-        else if (categorias[i]==12) tieneDoce=true;
-        else if (categorias[i]==13) tieneTrece=true;
-        else if (categorias[i]==1) tieneAs=true;
-    }
-    return tieneDiez && tieneOnce && tieneDoce && tieneTrece && tieneAs && IsFlush(mano);
-}
 
 //ahora toca la funcion para evaluar el tipo mano (carta mas alta, tercia, etc.) del jugador y asignar el puntaje correspondiente
 
 int puntajetipomano(nodoMazo* mano){
-    if(IsRoyalFlush(mano)){
-        return 1000;
-    }
-    else if(IsStraightFlush(mano)){
-        return 500;
-    }
-    else if(IsFourOfAKind(mano)){
+    if(IsFourOfAKind(mano)){
         return 400;
-    }
-    else if(IsFullHouse(mano)){
-        return 300;
     }
     else if(IsFlush(mano)){
         return 200;
@@ -472,7 +425,7 @@ int puntajetipomano(nodoMazo* mano){
 
 
 /*PUNTAJE MANO*/
-int puntajemano(nodoMazo* mano){
+/*int puntajemano(nodoMazo* mano){
     int puntaje = 0;
     int valor = 0;
     int puntajetipomano(nodoMazo* mano);
@@ -651,24 +604,93 @@ int puntajemano(nodoMazo* mano){
     }
     return -1; // En caso de que no se cumpla ninguna condición
 }
+*/
 
+int puntajemano(nodoMazo* mano){
+    if (mano == nullptr) return 0;
+    int counts[14] = {0};   // índices 1..13
+    int val[14]    = {0};   // valor asociado a cada categoría (primera aparición)
+    nodoMazo* t = mano;
+    while (t != nullptr){
+        int c = t->mano.Categoria;
+        if (c >= 1 && c <= 13){
+            counts[c]++;
+            if (val[c] == 0) val[c] = t->mano.Valor;
+        }
+        t = t->sig;
+    }
+    // Póker
+    for (int c = 13; c >= 1; --c){
+        if (counts[c] >= 4){
+            int puntaje = val[c] * 4 + puntajetipomano(mano);
+            return puntaje;
+        }
+    }
+    // Tercia
+    for (int c = 13; c >= 1; --c){
+        if (counts[c] >= 3){
+            int puntaje = val[c] * 3 + puntajetipomano(mano);
+            return puntaje;
+        }
+    }
+    // Doble par
+    int pares = 0;
+    int sumaParesVal = 0;
+    for (int c = 13; c >= 1; --c){
+        if (counts[c] >= 2){
+            pares++;
+            sumaParesVal += val[c] * 2;
+        }
+    }
+    if (pares >= 2){
+        int puntaje = sumaParesVal + puntajetipomano(mano);
+        return puntaje;
+    }
+    // Par
+    for (int c = 13; c >= 1; --c){
+        if (counts[c] >= 2){
+            int puntaje = val[c] * 2 + puntajetipomano(mano);
+            return puntaje;
+        }
+    }
+    // Straight / Flush
+    if (IsStraight(mano) || IsFlush(mano)){
+        int maxValor = 0;
+        nodoMazo* u = mano;
+        while (u != nullptr){
+            if (u->mano.Valor > maxValor) maxValor = u->mano.Valor;
+            u = u->sig;
+        }
+        int puntaje = maxValor + puntajetipomano(mano);
+        return puntaje;
+    }
+    // High Card: tomar la carta más alta
+    {
+        int maxValor = 0;
+        nodoMazo* u = mano;
+        while (u != nullptr){
+            if (u->mano.Valor > maxValor) maxValor = u->mano.Valor;
+            u = u->sig;
+        }
+        int puntaje = maxValor + puntajetipomano(mano);
+        return puntaje;
+    }
+    // por seguridad
+    return 0;
+}
 
 
 
 
 //esta funcion la hice para no hacer puros ifs dentro de otras funciones para saber qué tipo de mano se jugó
 string arrojarTipoMano(nodoMazo *mano){
-    if(IsHighCard(mano)) return "Carta Más Alta";
-    else if(IsPair(mano)) return "Par";
+    if(IsPair(mano)) return "Par";
     else if(IsTwoPair(mano)) return "Doble Par";
     else if(IsThreeOfAKind(mano)) return "Tercia";
     else if(IsFourOfAKind(mano)) return "Póker";
-    else if(IsFiveOfAKind(mano)) return "Quintilla";
     else if(IsStraight(mano)) return "Escalera";
     else if(IsFlush(mano)) return "Color";
-    else if(IsStraightFlush(mano)) return "Escalera de Color";
-    else if(IsRoyalFlush(mano)) return "Escalera Real";
-    else return "Full House";
+    else return "Carta Más Alta";
 }
 
 //esta  funcion maneja la decision del jugador, ya sea jugar, descartar o ver las cartas disponibles y no disponibles
