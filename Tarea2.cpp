@@ -3,8 +3,6 @@ using namespace std;
 #include <iostream>
 #include <random>
 #include <cstdlib>
-#include "tiposmano.cpp"
-#include "puntajemano.cpp"
 struct carta {
     char Palo ;
     int Categoria ;
@@ -164,7 +162,7 @@ void eliminarPorIndice(nodoMazo* &mazo, int indice) {
 int listSize(nodoMazo *mazo){
     int count=0;
     nodoMazo *aux= mazo;
-    while(aux->sig!=NULL){
+    while(aux!=NULL){
         aux=aux->sig;
         count++;
     }
@@ -205,7 +203,7 @@ void ordenarManoDesc(nodoMazo* &mazo) {
 void mostrarMano(nodoMazo *mano){
     nodoMazo *aux=mano;//creamos un nodo auxiliar para acceder a la lista y poder operar sobre ella
 
-    while(aux->sig!=NULL){// nota para futuro xd: para iterar sobre listas es conveniente usar usar un while
+    while(aux!=NULL){// nota para futuro xd: para iterar sobre listas es conveniente usar usar un while
         cout<<aux->mano.Categoria<< aux->mano.Palo<<" ";
         aux=aux->sig;
     }
@@ -295,120 +293,68 @@ bool IsHighCard(nodoMazo* mano){
     return true;
 }
 bool IsPair(nodoMazo* mano){
-    nodoMazo* auxmano=mano;
-    while (auxmano!=NULL){
-        int categoriaActual=auxmano->mano.Categoria;
-        nodoMazo* aux2=auxmano->sig;
-        while (aux2!=NULL){
-            if (aux2->mano.Categoria==categoriaActual){
-                return true;
-            }
-            aux2=aux2->sig;
-        }
+    if (mano == nullptr) return false;
+    int counts[14] = {0}; // índices 1..13
+    nodoMazo* aux = mano;
+    while (aux != nullptr){
+        int c = aux->mano.Categoria;
+        if (c >= 1 && c <= 13) counts[c]++;
+        aux = aux->sig;
     }
+    for (int i = 1; i <= 13; ++i) if (counts[i] >= 2) return true;
     return false;
 }
 
 bool IsTwoPair(nodoMazo* mano){
-    int cuentapares=0;
-    nodoMazo* auxmano = mano;
-    while (auxmano!=NULL){
-        int categoriaActual = auxmano->mano.Categoria;
-        nodoMazo* aux2 = auxmano-> sig;
-        while (aux2!=NULL){
-            if (aux2->mano.Categoria==categoriaActual){
-                cuentapares++;
-                break;
-            }
-            aux2=aux2->sig;
-        }
+    if (mano == nullptr) return false;
+    int counts[14] = {0};
+    nodoMazo* aux = mano;
+    while (aux != nullptr){
+        int c = aux->mano.Categoria;
+        if (c >= 1 && c <= 13) counts[c]++;
+        aux = aux->sig;
     }
-    if (cuentapares==2){
-        return true;
-    }
-    else{
-        return false;
-    }
+    int pairs = 0;
+    for (int i = 1; i <= 13; ++i) if (counts[i] >= 2) pairs++;
+    return true; //no tengo ni la menor idea de lo que hace esta funcion ahora mismo qwq
 }
 
 bool IsThreeOfAKind(nodoMazo* mano){
-    nodoMazo* auxmano=mano;
-    while (auxmano!=NULL){
-        int categoriaActual=auxmano->mano.Categoria;
-        nodoMazo* aux2=auxmano->sig;
-        while (aux2!=NULL){
-            if (aux2->mano.Categoria==categoriaActual){
-                nodoMazo* aux3=aux2->sig;
-                while (aux3!=NULL){
-                    if (aux3->mano.Categoria==categoriaActual){
-                        return true;
-                    }
-                }
-            }
-            aux2=aux2->sig;
-        }
-        auxmano=auxmano->sig;
+    if (mano == nullptr) return false;
+    int counts[14] = {0};
+    nodoMazo* aux = mano;
+    while (aux != nullptr){
+        int c = aux->mano.Categoria;
+        if (c >= 1 && c <= 13) counts[c]++;
+        aux = aux->sig;
     }
+    for (int i = 1; i <= 13; ++i) if (counts[i] >= 3) return true;
     return false;
 }
-
 bool IsFourOfAKind(nodoMazo* mano){
-    nodoMazo* auxmano=mano;
-    while (auxmano!=NULL){
-        int categoriaActual=auxmano->mano.Categoria;
-        nodoMazo* aux2=auxmano->sig;
-        while (aux2!=NULL){
-            if (aux2->mano.Categoria==categoriaActual){
-                nodoMazo* aux3=aux2->sig;
-                while (aux3!=NULL){
-                    if (aux3->mano.Categoria==categoriaActual){
-                        nodoMazo* aux4=aux3->sig;
-                        while(aux4!=NULL){
-                            if (aux4->mano.Categoria==categoriaActual){
-                                return true;
-                            }
-                        }
-                    }
-                    aux3=aux3->sig;
-                }
-                aux2=aux2->sig;
-            }
-            auxmano=auxmano->sig;
+    if (mano == nullptr) return false;
+    // Para cada categoría en la mano, contamos cuántas veces aparece
+    for (nodoMazo* a = mano; a != nullptr; a = a->sig) {
+        int cat = a->mano.Categoria;
+        int count = 0;
+        for (nodoMazo* b = mano; b != nullptr; b = b->sig) {
+            if (b->mano.Categoria == cat) count++;
         }
+        if (count >= 4) return true;
     }
     return false;
 }
 
 bool IsFiveOfAKind(nodoMazo* mano){
-    nodoMazo* auxmano=mano;
-    while (auxmano!=NULL){
-        int categoriaActual=auxmano->mano.Categoria;
-        nodoMazo* aux2=auxmano->sig;
-        while (aux2!=NULL){
-            if (aux2->mano.Categoria==categoriaActual){
-                nodoMazo* aux3=aux2->sig;
-                while (aux3!=NULL){
-                    if (aux3->mano.Categoria==categoriaActual){
-                        nodoMazo* aux4=aux3->sig;
-                        while(aux4!=NULL){
-                            if (aux4->mano.Categoria==categoriaActual){
-                                nodoMazo* aux5=aux4->sig;
-                                while (aux5!=NULL){
-                                    if (aux5->mano.Categoria==categoriaActual){
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                        aux4=aux4->sig;
-                    }
-                    aux3=aux3->sig;
-                }
-                aux2=aux2->sig;
-            }
-            auxmano=auxmano->sig;
-        }
+    if (mano == nullptr) return false;
+    int counts[14] = {0};
+    nodoMazo* aux = mano;
+    while (aux != nullptr){
+        int c = aux->mano.Categoria;
+        if (c >= 1 && c <= 13) counts[c]++;
+        aux = aux->sig;
     }
+    for (int i = 1; i <= 13; ++i) if (counts[i] >= 5) return true;
     return false;
 }
 
@@ -488,9 +434,48 @@ bool IsRoyalFlush(nodoMazo* mano){
     return tieneDiez && tieneOnce && tieneDoce && tieneTrece && tieneAs && IsFlush(mano);
 }
 
+//ahora toca la funcion para evaluar el tipo mano (carta mas alta, tercia, etc.) del jugador y asignar el puntaje correspondiente
+
+int puntajetipomano(nodoMazo* mano){
+    if(IsRoyalFlush(mano)){
+        return 1000;
+    }
+    else if(IsStraightFlush(mano)){
+        return 500;
+    }
+    else if(IsFourOfAKind(mano)){
+        return 400;
+    }
+    else if(IsFullHouse(mano)){
+        return 300;
+    }
+    else if(IsFlush(mano)){
+        return 200;
+    }
+    else if(IsStraight(mano)){
+        return 150;
+    }
+    else if(IsThreeOfAKind(mano)){
+        return 120;
+    }
+    else if(IsTwoPair(mano)){
+        return 80;
+    }
+    else if(IsPair(mano)){
+        return 40;
+    }
+    else{
+        return 50; //High Card
+    }
+
+}
+
+
 /*PUNTAJE MANO*/
 int puntajemano(nodoMazo* mano){
     int puntaje = 0;
+    int valor = 0;
+    int puntajetipomano(nodoMazo* mano);
     nodoMazo* aux = mano;
     if (IsHighCard(mano)){
         //carta mas alta
@@ -664,70 +649,33 @@ int puntajemano(nodoMazo* mano){
         puntaje += puntajetipomano(mano);
         return puntaje;
     }
+    return -1; // En caso de que no se cumpla ninguna condición
 }
 
 
-//ahora toca la funcion para evaluar el tipo mano (carta mas alta, tercia, etc.) del jugador y asignar el puntaje correspondiente
-
-int puntajetipomano(nodoMazo* mano){
-    if(IsRoyalFlush(mano)){
-        return 1000;
-    }
-    else if(IsStraightFlush(mano)){
-        return 500;
-    }
-    else if(IsFourOfAKind(mano)){
-        return 400;
-    }
-    else if(IsFullHouse(mano)){
-        return 300;
-    }
-    else if(IsFlush(mano)){
-        return 200;
-    }
-    else if(IsStraight(mano)){
-        return 150;
-    }
-    else if(IsThreeOfAKind(mano)){
-        return 120;
-    }
-    else if(IsTwoPair(mano)){
-        return 80;
-    }
-    else if(IsPair(mano)){
-        return 40;
-    }
-    else{
-        return 50; //High Card
-    }
-
-}
-
-//mockup de la funcion de las ciegas a vencer (WIP)
-void ciegas(int &pequena, int &grande, int &jefe){
-    pequena=250;
-    grande=350;
-    jefe=500;
 
 
-}
 
 //esta funcion la hice para no hacer puros ifs dentro de otras funciones para saber qué tipo de mano se jugó
 string arrojarTipoMano(nodoMazo *mano){
-    if(IsHighCard) return "Carta Más Alta";
-    else if(IsPair) return "Par";
-    else if(IsTwoPair) return "Doble Par";
-    else if(IsThreeOfAKind) return "Tercia";
-    else if(IsFourOfAKind) return "Escalera";
-    else if(IsFiveOfAKind) return "Color";
-    else(IsFullHouse) return "Poker";
+    if(IsHighCard(mano)) return "Carta Más Alta";
+    else if(IsPair(mano)) return "Par";
+    else if(IsTwoPair(mano)) return "Doble Par";
+    else if(IsThreeOfAKind(mano)) return "Tercia";
+    else if(IsFourOfAKind(mano)) return "Póker";
+    else if(IsFiveOfAKind(mano)) return "Quintilla";
+    else if(IsStraight(mano)) return "Escalera";
+    else if(IsFlush(mano)) return "Color";
+    else if(IsStraightFlush(mano)) return "Escalera de Color";
+    else if(IsRoyalFlush(mano)) return "Escalera Real";
+    else return "Full House";
 }
 
 //esta  funcion maneja la decision del jugador, ya sea jugar, descartar o ver las cartas disponibles y no disponibles
-void decisionJugar(arbolPinta *&arboles[], nodoMazo *&mazo, nodoMazo *&mano, int &manosRestantes, int &descartesRestantes, int &puntajeTotal, int tamMano){
+void decisionJugar(arbolPinta *arboles[], nodoMazo *&mazo, nodoMazo *&mano, int &manosRestantes, int &descartesRestantes, int &puntajeTotal, int tamMano){
     char decision;
     int cantidad;
-    cout<<"Juega: "<<;
+    cout<<"Juega: "<<endl;
     cin>>decision;
     if(decision=='M' || decision=='m'){
         mostrarCartas(arboles);
@@ -751,12 +699,13 @@ void decisionJugar(arbolPinta *&arboles[], nodoMazo *&mazo, nodoMazo *&mano, int
     //rescatamos las cartas seleccionadas
     carta seleccionadas[5];
     nodoMazo *aux=mano;//accedemos a la mano para rescatar las cartas seleccionadas
-    for(int i=0; i<cantidad; i++){
+    int i;
+    for(i=0; i<cantidad; i++){
         aux=mano;
         for(int j=0; j<indices[i]; i++){
             aux=aux->sig;
         }
-    }   seleccionadas[i]=aux->info;
+    }   seleccionadas[i]=aux->mano;
 
     if(decision=='D' || decision=='d'){
         if(descartesRestantes<=0){
@@ -771,7 +720,6 @@ void decisionJugar(arbolPinta *&arboles[], nodoMazo *&mazo, nodoMazo *&mano, int
             cout<<"No quedan manos."<< endl;
             return;
         }
-        int puntaje=0;
         string tipoMano= arrojarTipoMano(mano);
         cout<<"Mano Jugada: "<<tipoMano<<endl;
         cout<<"Fichas anotadas"<<puntajetipomano(mano)<<endl;
@@ -783,7 +731,7 @@ void decisionJugar(arbolPinta *&arboles[], nodoMazo *&mazo, nodoMazo *&mano, int
         cout<<"Decision inválida."<<endl;
         return;
     }
-    repartir(mazo, mano, tamMano, arboles);
+    Repartir(mazo, mano, tamMano, arboles);
 
 
 }
@@ -806,7 +754,7 @@ bool partida(arbolPinta* arboles[], int pozo, string nombre_ciega, bool es_jefe)
     int descartes=3;
     while(true){
         cout<<puntajeTotal<<" / "<<pozo<<" fichas"<<endl;
-        cout<<listSize(mano)" / 52 "<< "cartas"<<endl;
+        cout<<listSize(mano)<<" / 52 "<< "cartas"<<endl;
         cout<<manosRestantes<< "J / "<<descartes<<"D"<<endl;
         mostrarMano(mano);
         decisionJugar(arboles, mazo, mano, manosRestantes, descartes, puntajeTotal, tamMano);
@@ -917,8 +865,8 @@ int main(){
     arbolPinta *arboles[4];
     crearArboles(arboles);
     cout<<"Bienvenido al maravilloso juevo de DataBalatro!"<<endl;
-    if(!partida(arboles, 250, "Ciega Pequeña", true)) return 0;
-    if(!partida(arboles, 350, "Ciega Grande", true)) return 0;
+    if(!partida(arboles, 250, "Ciega Pequeña", false)) return 0;
+    if(!partida(arboles, 350, "Ciega Grande", false)) return 0;
     if(!partida(arboles, 500, "Ciega Jefe", true)) return 0;
 
     return 0;
