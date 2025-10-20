@@ -1,3 +1,5 @@
+/*Balatro Balatrez esta jugando Balatro*/
+
 using namespace std;
 #include <string>
 #include <iostream>
@@ -21,7 +23,7 @@ struct nodoMazo {
     nodoMazo *sig;
 };
 
-//funcion para crear los arbolers de cada pinta
+/*funcion para crear los arboles de cada pinta*/
 arbolPinta* ABB_pinta(carta cartas[], int inicio, int final){
     if(final<inicio) return NULL;
     int medio=(inicio+final)/2;
@@ -33,7 +35,7 @@ arbolPinta* ABB_pinta(carta cartas[], int inicio, int final){
 
 }
 
-//esta funcion crea los arboles de cada pinta
+/*esta funcion crea los arboles de cada pinta de cartas*/
 void crearArboles(arbolPinta* arboles[]){
     char palos[4]={'C', 'D', 'E', 'T'};
     for(int i=0; i<4; i++){
@@ -49,7 +51,7 @@ void crearArboles(arbolPinta* arboles[]){
     }
 }
 
-//esto es para asegurar qaue todas las cartas estén, su campo jugada, en false
+/*esto es para asegurar qaue todas las cartas estén, su campo jugada, en false*/
 void iniciarJugada(arbolPinta* raiz){
     if(raiz==NULL) return;
     raiz->cartas.Jugada=false;
@@ -57,7 +59,7 @@ void iniciarJugada(arbolPinta* raiz){
     iniciarJugada(raiz->der);
 }
 
-//esto es para obtener el indice del palo a saber
+/*esto es para obtener el indice del palo a conocer*/
 int indicePalo(char palo) {
     if (palo == 'C') return 0;
     if (palo == 'D') return 1;
@@ -66,7 +68,7 @@ int indicePalo(char palo) {
     return -1;
 }
 
-//funcion para buscar una carta, por su categoría, en el arbol que corresponda
+/*funcion para buscar una carta, por su categoría, en el arbol que corresponda*/
 arbolPinta* buscarCartaCategoria(arbolPinta* raiz, int categoria){
     if(raiz==NULL || raiz->cartas.Categoria==categoria) return raiz;
     if(categoria<raiz->cartas.Categoria){
@@ -75,15 +77,15 @@ arbolPinta* buscarCartaCategoria(arbolPinta* raiz, int categoria){
     return buscarCartaCategoria(raiz->der, categoria);
 }
 
-//funcion para marcar una carta como jugada en el arbol respectivo
+/*funcion para marcar una carta como jugada en el arbol respectivo*/
 void marcarJugada(arbolPinta *arboles[], carta c){
     int indice_palo=indicePalo(c.Palo);
     arbolPinta *nodo = buscarCartaCategoria(arboles[indice_palo], c.Categoria); //creamos un nodo para marcar la carta deseada
     if(nodo) nodo->cartas.Jugada=true;
 }
 
-//a continuacion se implementarán 2 funciones para reocrrer el arbol en inorden
-//una es para las cartas disponibles y la otra es para las no disponibles
+/*a continuacion se implementarán 2 funciones para reocrrer el arbol en inorden
+una es para las cartas disponibles y la otra es para las no disponibles*/
 void InordenDisp(arbolPinta *raiz){
     if(raiz==NULL) return;
 
@@ -103,7 +105,7 @@ void InordenNoDisp(arbolPinta *raiz){
     InordenNoDisp(raiz->der);
 }
 
-//funcion para mostrar las disponibles/nodisponibles de cada pinta(arbol)
+/*funcion para mostrar las disponibles/nodisponibles de cada pinta(arbol)*/
 void mostrarCartas(arbolPinta * arboles[]){
     cout<<"Disponibles: "<<endl;
 
@@ -120,7 +122,7 @@ void mostrarCartas(arbolPinta * arboles[]){
     cout<<"\n";
 }
 
-//funcion para agregar cartas al final del mazo(lista)
+/*funcion para agregar cartas al final del mazo(lista)*/
 void AppendMazo(nodoMazo *&mazo, carta carta){
     nodoMazo *nodo= new nodoMazo();
     nodo->mano=carta;
@@ -138,7 +140,7 @@ void AppendMazo(nodoMazo *&mazo, carta carta){
 
 }
 
-//funcion para eliminar una carta por su indice
+/*funcion para eliminar una carta por su indice*/
 void eliminarPorIndice(nodoMazo* &mazo, int indice) {
     if (mazo == NULL) return;
     if (indice==0) {
@@ -159,7 +161,7 @@ void eliminarPorIndice(nodoMazo* &mazo, int indice) {
 }
 
 
-//funcion para determinar el largo del mazo/lista
+/*funcion para determinar el largo del mazo/lista*/
 int listSize(nodoMazo *mazo){
     int count=0;
     nodoMazo *aux= mazo;
@@ -169,7 +171,7 @@ int listSize(nodoMazo *mazo){
     }
     return count;   
 }
-//función para liberar la memoria de la lista mazo
+/*función para liberar la memoria de la lista mazo*/
 void eliminarLista(nodoMazo *&mazo){
     //liberamos nodo por nodo
     while(mazo!=NULL){
@@ -179,7 +181,7 @@ void eliminarLista(nodoMazo *&mazo){
     }
 }
 
-//esta funcion ordena las cartas descendentemente por categoria, teniendo en cuenta que As=14
+/*esta funcion ordena las cartas descendentemente por categoria, teniendo en cuenta que As=14*/
 void ordenarManoDesc(nodoMazo* &mazo) {
     if (mazo == nullptr) return;
     bool swap;
@@ -200,18 +202,18 @@ void ordenarManoDesc(nodoMazo* &mazo) {
     } while(swap);
 }
 
-//funcion para imprimir la mano
+/*funcion para imprimir la mano*/
 void mostrarMano(nodoMazo *mano){
     nodoMazo *aux=mano;//creamos un nodo auxiliar para acceder a la lista y poder operar sobre ella
 
-    while(aux!=NULL){// nota para futuro xd: para iterar sobre listas es conveniente usar usar un while
+    while(aux!=NULL){
         cout<<aux->mano.Categoria<< aux->mano.Palo<<" ";
         aux=aux->sig;
     }
     cout<<"\n";
 }
 
-//funcion para barajar las cartas y crear la lista enlazada
+/*funcion para barajar las cartas y crear la lista enlazada*/
 void Barajar(nodoMazo* &mazo) {
     carta cartas[52];
     int indice = 0;
@@ -241,7 +243,7 @@ void Barajar(nodoMazo* &mazo) {
     }
 }
 
-//esto reparte las cartas que están en el mazo a la mano
+/*esto reparte las cartas que están en el mazo a la mano*/
 void Repartir(nodoMazo *&mazo, nodoMazo *&mano, int max, arbolPinta *arboles[]){
     int cartasEnMano=listSize(mano); //vemos cuantas cartas hay en la mano
     int cartasARepartir=max-cartasEnMano;//vemos cuantas se repartirán
@@ -258,7 +260,7 @@ void Repartir(nodoMazo *&mazo, nodoMazo *&mano, int max, arbolPinta *arboles[]){
 }
 
 
-//esta funcion elimina las cartas por su índice, de forma descendiente
+/*esta funcion elimina las cartas por su índice, de forma descendiente*/
 void eliminarSeleccionadas(nodoMazo *&mano, int indices[], int cantidad){
     // ordenar descendientemente 
     for(int i=0; i<cantidad; i++){
@@ -270,19 +272,17 @@ void eliminarSeleccionadas(nodoMazo *&mano, int indices[], int cantidad){
             }
         }
     }
-
-    // borrar las cartas por índice: convertir 1-based -> 0-based al eliminar
     for(int i=0; i<cantidad;i++){
         eliminarPorIndice(mano, indices[i]);
     }
 }
 
-/*FALTA VER LOS TIPOS DE MANO*/
 
 /*TIPOS MANO */
+/*estas funciones determinan si la mano es o no es el tipo que deberia ser*/
 bool IsPair(nodoMazo* mano){
     if (mano == nullptr) return false;
-    int counts[14] = {0}; // índices 1..13
+    int counts[14] = {0}; // índices 1 al 13
     nodoMazo* aux = mano;
     while (aux != nullptr){
         int c = aux->mano.Categoria;
@@ -333,17 +333,14 @@ bool IsFourOfAKind(nodoMazo* mano){
     return false;
 }
 
-
-
-
 bool IsStraight(nodoMazo* mano){
     if (mano == nullptr) return false;
-    int vals[5];
+    int val[5];
     int index = 0;
     nodoMazo* t = mano;
     // extraer hasta 5 cartas (la lista de por si ya es descendente)
     while (t != nullptr && index < 5){
-        vals[index++] = (t->mano.Categoria == 1) ? 14 : t->mano.Categoria; // tratar As como 14
+        val[index++] = (t->mano.Categoria == 1) ? 14 : t->mano.Categoria; // tratar As como 14
         t = t->sig;
     }
     if (index != 5) return false; //solo consideramos escalera con exactamente 5 cartas
@@ -351,11 +348,11 @@ bool IsStraight(nodoMazo* mano){
     //comprobar duplicados (no puede haber para ser escalera)
     for (int i = 0; i < 5; ++i)
         for (int j = i + 1; j < 5; ++j)
-            if (vals[i] == vals[j]) return false;
+            if (val[i] == val[j]) return false;
 
     //comprobamos diferencia -1 entre vecinos
     for (int i = 0; i < 4; ++i){
-        if (vals[i] - vals[i + 1] != 1) return false;
+        if (val[i] - val[i + 1] != 1) return false;
     }
     return true;
 }
@@ -380,7 +377,7 @@ bool IsHighCard(nodoMazo* mano){
 }
 
 
-//ahora toca la funcion para evaluar el tipo mano (carta mas alta, tercia, etc.) del jugador y asignar el puntaje correspondiente
+/*ahora toca la funcion para evaluar el tipo mano (carta mas alta, tercia, etc.) del jugador y asignar el puntaje correspondiente*/
 
 int puntajetipomano(nodoMazo* mano){
     if(IsFourOfAKind(mano)){
@@ -408,10 +405,10 @@ int puntajetipomano(nodoMazo* mano){
 }
 
 
-
+/*el puntaje total de la mano jugada*/
 int puntajemano(nodoMazo* mano){
     if (mano == nullptr) return 0;
-    int counts[14] = {0};   // índices que van del 1..13
+    int counts[14] = {0};   // índices que van del 1 al 13
     int val[14]    = {0};   // valor asociado a cada categoría
     nodoMazo* t = mano;
     while (t != nullptr){
@@ -456,7 +453,7 @@ int puntajemano(nodoMazo* mano){
             return puntaje;
         }
     }
-    // Straight / Flush
+    // Escalera / Color (ambos son 5 cartas)
     if (IsStraight(mano) || IsFlush(mano)){
     int sumaValor = 0;
     nodoMazo* u = mano;
@@ -478,14 +475,14 @@ int puntajemano(nodoMazo* mano){
         int puntaje = maxValor + puntajetipomano(mano);
         return puntaje;
     }
-    // por seguridad
+    // nomas por seguridad
     return 0;
 }
 
 
 
 
-//esta funcion la hice para no hacer puros ifs dentro de otras funciones para saber qué tipo de mano se jugó
+/*esta funcion existe para no hacer puros ifs dentro de otras funciones para saber qué tipo de mano se jugó*/
 string arrojarTipoMano(nodoMazo *mano){
     if (mano == nullptr) return "Carta Más Alta";
     if (IsFourOfAKind(mano)) return "Póker";
@@ -497,7 +494,7 @@ string arrojarTipoMano(nodoMazo *mano){
     return "Carta Más Alta";
 }
 
-//esta  funcion maneja la decision del jugador, ya sea jugar, descartar o ver las cartas disponibles y no disponibles
+/*esta funcion maneja la decision del jugador, ya sea jugar, descartar o ver las cartas disponibles y no disponibles*/
 void decisionJugar(arbolPinta *arboles[], nodoMazo *&mazo, nodoMazo *&mano, int &manosRestantes, int &descartesRestantes, int &puntajeTotal, int tamMano){
     char decision;
     int cantidad;
@@ -585,7 +582,7 @@ void decisionJugar(arbolPinta *arboles[], nodoMazo *&mazo, nodoMazo *&mano, int 
     eliminarLista(seleccionLista); // liberar lista temporal
     Repartir(mazo, mano, tamMano, arboles);
 }
-//esta funcion es la que se encarga del flujo de ju8ego
+/*esta funcion es la que se encarga del flujo de juego*/
 bool partida(arbolPinta* arboles[], int pozo, string nombre_ciega, bool es_jefe){
     cout<<"Comienza la "<<nombre_ciega<<", pozo a vencer: "<<pozo<<" fichas"<<endl;
     for(int i=0; i<4; i++){
@@ -620,7 +617,7 @@ bool partida(arbolPinta* arboles[], int pozo, string nombre_ciega, bool es_jefe)
     return false;
 }
 
-
+/*aqui se balatrea*/
 int main(){
     
     arbolPinta *arboles[4];
