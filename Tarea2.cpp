@@ -260,9 +260,8 @@ void Repartir(nodoMazo *&mazo, nodoMazo *&mano, int max, arbolPinta *arboles[]){
 
 //esta funcion elimina las cartas por su índice, de forma descendiente
 void eliminarSeleccionadas(nodoMazo *&mano, int indices[], int cantidad){
-    int i;
-    //primero se ordena descendientemente
-    for(i=0; i<cantidad; i++){
+    // ordenar descendientemente 
+    for(int i=0; i<cantidad; i++){
         for(int j=i+1; j<cantidad; j++){
             if(indices[j]>indices[i]){
                 int aux=indices[j];
@@ -272,8 +271,8 @@ void eliminarSeleccionadas(nodoMazo *&mano, int indices[], int cantidad){
         }
     }
 
-    //y ahora se borran las cartas
-    for(i=0; i<cantidad;i++){
+    // borrar las cartas por índice: convertir 1-based -> 0-based al eliminar
+    for(int i=0; i<cantidad;i++){
         eliminarPorIndice(mano, indices[i]);
     }
 }
@@ -281,18 +280,6 @@ void eliminarSeleccionadas(nodoMazo *&mano, int indices[], int cantidad){
 /*FALTA VER LOS TIPOS DE MANO*/
 
 /*TIPOS MANO */
-bool IsHighCard(nodoMazo* mano){
-    //una mano es High Card si no cumple con ninguna de las otras categorias, pero solo toma la carta mas alta en cuenta
-    nodoMazo* aux=mano;
-    int maxCategoria=0;
-    while (aux!=NULL){
-        if (aux->mano.Categoria>maxCategoria){
-            maxCategoria=aux->mano.Categoria;
-        }
-        aux=aux->sig;
-    }
-    return true;
-}
 bool IsPair(nodoMazo* mano){
     if (mano == nullptr) return false;
     int counts[14] = {0}; // índices 1..13
@@ -317,7 +304,7 @@ bool IsTwoPair(nodoMazo* mano){
     }
     int pairs = 0;
     for (int i = 1; i <= 13; ++i) if (counts[i] >= 2) pairs++;
-    return true; //no tengo ni la menor idea de lo que hace esta funcion ahora mismo qwq
+    return pairs >= 2;
 }
 
 bool IsThreeOfAKind(nodoMazo* mano){
@@ -350,49 +337,46 @@ bool IsFourOfAKind(nodoMazo* mano){
 
 
 bool IsStraight(nodoMazo* mano){
-    nodoMazo* aux=mano;
-    int categorias[5];
-    int index=0;
-    while (aux!=NULL && index<5){
-        categorias[index]=aux->mano.Categoria;
-        aux=aux->sig;
-        index++;
+    if (mano == nullptr) return false;
+    int vals[5];
+    int index = 0;
+    nodoMazo* t = mano;
+    // extraer hasta 5 cartas (la lista de por si ya es descendente)
+    while (t != nullptr && index < 5){
+        vals[index++] = (t->mano.Categoria == 1) ? 14 : t->mano.Categoria; // tratar As como 14
+        t = t->sig;
     }
+    if (index != 5) return false; //solo consideramos escalera con exactamente 5 cartas
 
-    //ordenar las categorias, las cartas deberian ser consecutivas entre si (ejemplo: 5,6,7,8,9 o 10,11,12,13,1)
-    for (int i=0; i<index-1; i++){
-        for (int j=i+1; j<index; j++){
-            if (categorias[i]>categorias[j]){
-                int temp=categorias[i];
-                categorias[i]=categorias[j];
-                categorias[j]=temp;
-            }
+    //comprobar duplicados (no puede haber para ser escalera)
+    for (int i = 0; i < 5; ++i)
+        for (int j = i + 1; j < 5; ++j)
+            if (vals[i] == vals[j]) return false;
 
-    }
-}
-    //verificar si son consecutivas
-    for (int i=0; i<index-1; i++){
-        if (categorias[i]+1 != categorias[i+1]){
-            //caso especial para el as
-            if (!(categorias[i]==13 && categorias[i+1]==1)){
-                return false;
-            }
-        }
+    //comprobamos diferencia -1 entre vecinos
+    for (int i = 0; i < 4; ++i){
+        if (vals[i] - vals[i + 1] != 1) return false;
     }
     return true;
 }
-
 
 bool IsFlush(nodoMazo* mano){
-    nodoMazo* aux=mano;
-    char paloInicial=aux->mano.Palo;
-    while (aux!=NULL){
-        if (aux->mano.Palo!=paloInicial){
-            return false;
-        }
-        aux=aux->sig;
+    if (mano == nullptr) return false;
+    int contador = 0;
+    nodoMazo* t = mano;
+    char palo = 0;
+    while (t != nullptr){
+        if (contador == 0) palo = t->mano.Palo;
+        else if (t->mano.Palo != palo) return false;
+        ++contador;
+        t = t->sig;
     }
-    return true;
+    return (contador == 5); // solo consideramos Color con exactamente 5 cartas
+}
+bool IsHighCard(nodoMazo* mano){
+    if (mano == nullptr) return false;
+    // High Card si no cumple ninguna otra categoría relevante
+    return !(IsPair(mano) || IsTwoPair(mano) || IsThreeOfAKind(mano) || IsFourOfAKind(mano) || IsStraight(mano) || IsFlush(mano));
 }
 
 
@@ -424,192 +408,11 @@ int puntajetipomano(nodoMazo* mano){
 }
 
 
-/*PUNTAJE MANO*/
-/*int puntajemano(nodoMazo* mano){
-    int puntaje = 0;
-    int valor = 0;
-    int puntajetipomano(nodoMazo* mano);
-    nodoMazo* aux = mano;
-    if (IsHighCard(mano)){
-        //carta mas alta
-        int maxCategoria = 0;
-        while (aux != NULL){
-            if (aux->mano.Categoria > maxCategoria){
-                maxCategoria = aux->mano.Categoria;
-                valor = aux->mano.Valor;
-            }
-            aux = aux->sig;
-        }
-        puntaje += valor;
-        puntaje += puntajetipomano(mano);
-        return puntaje;
-    }
-    if (IsPair(mano)){
-        nodoMazo* auxmano=mano;
-        while (auxmano!=NULL){
-            int categoriaActual=auxmano->mano.Categoria;
-            nodoMazo* aux2=auxmano->sig;
-            while (aux2!=NULL){
-                if (aux2->mano.Categoria==categoriaActual){
-                    puntaje += auxmano->mano.Valor * 2;
-                    puntaje += puntajetipomano(mano);
-                    return puntaje;
-                }
-                aux2=aux2->sig;
-            }
-        }
-    }
-    if (IsTwoPair(mano)){
-        int paresEncontrados = 0;
-        nodoMazo* auxmano = mano;
-        while (auxmano != NULL){
-            int categoriaActual = auxmano->mano.Categoria;
-            nodoMazo* aux2 = auxmano->sig;
-            while (aux2 != NULL){
-                if (aux2->mano.Categoria == categoriaActual){
-                    puntaje += auxmano->mano.Valor * 2;
-                    paresEncontrados++;
-                    break;
-                }
-                aux2 = aux2->sig;
-            }
-            auxmano = auxmano->sig;
-        }
-        if (paresEncontrados == 2){
-            puntaje += puntajetipomano(mano);
-            return puntaje;
-        }
-    }
-    if (IsThreeOfAKind(mano)){
-        nodoMazo* auxmano=mano;
-        while (auxmano!=NULL){
-            int categoriaActual=auxmano->mano.Categoria;
-            nodoMazo* aux2=auxmano->sig;
-            while (aux2!=NULL){
-                if (aux2->mano.Categoria==categoriaActual){
-                    nodoMazo* aux3=aux2->sig;
-                    while (aux3!=NULL){
-                        if (aux3->mano.Categoria==categoriaActual){
-                            puntaje += auxmano->mano.Valor * 3;
-                            puntaje += puntajetipomano(mano);
-                            return puntaje;
-                        }
-                    }
-                }
-                aux2=aux2->sig;
-            }
-            auxmano=auxmano->sig;
-        }
-    }
-    if (IsFourOfAKind(mano)){
-        nodoMazo* auxmano=mano;
-        while (auxmano!=NULL){
-            int categoriaActual=auxmano->mano.Categoria;
-            nodoMazo* aux2=auxmano->sig;
-            while (aux2!=NULL){
-                if (aux2->mano.Categoria==categoriaActual){
-                    nodoMazo* aux3=aux2->sig;
-                    while (aux3!=NULL){
-                        if (aux3->mano.Categoria==categoriaActual){
-                            nodoMazo* aux4=aux3->sig;
-                            while(aux4!=NULL){
-                                if (aux4->mano.Categoria==categoriaActual){
-                                    puntaje += auxmano->mano.Valor * 4;
-                                    puntaje += puntajetipomano(mano);
-                                    return puntaje;
-                                }
-                            }
-                        }
-                        aux3=aux3->sig;
-                    }
-                    aux2=aux2->sig;
-                }
-                auxmano=auxmano->sig;
-            }
-        }
-    }
-    if (IsFiveOfAKind(mano)){
-        nodoMazo* auxmano=mano;
-        while (auxmano!=NULL){
-            int categoriaActual=auxmano->mano.Categoria;
-            nodoMazo* aux2=auxmano->sig;
-            while (aux2!=NULL){
-                if (aux2->mano.Categoria==categoriaActual){
-                    nodoMazo* aux3=aux2->sig;
-                    while (aux3!=NULL){
-                        if (aux3->mano.Categoria==categoriaActual){
-                            nodoMazo* aux4=aux3->sig;
-                            while(aux4!=NULL){
-                                if (aux4->mano.Categoria==categoriaActual){
-                                    nodoMazo* aux5=aux4->sig;
-                                    while (aux5!=NULL){
-                                        if (aux5->mano.Categoria==categoriaActual){
-                                            puntaje += auxmano->mano.Valor * 5;
-                                            puntaje += puntajetipomano(mano);
-                                            return puntaje;
-                                        }
-                                    }
-                                }
-                            }
-                            aux4=aux4->sig;
-                        }
-                        aux3=aux3->sig;
-                    }
-                    aux2=aux2->sig;
-                }
-                auxmano=auxmano->sig;
-            }
-        }
-    }
-    if (IsFullHouse(mano)){
-        nodoMazo* auxmano=mano;
-        int valorTercia=0;
-        int valorPar=0;
-        while (auxmano!=NULL){
-            int categoriaActual=auxmano->mano.Categoria;
-            int contador=0;
-            nodoMazo* aux2=auxmano;
-            while (aux2!=NULL){
-                if (aux2->mano.Categoria==categoriaActual){
-                    contador++;
-                }
-                aux2=aux2->sig;
-            }
-            if (contador==3){
-                valorTercia=auxmano->mano.Valor * 3;
-            }
-            else if (contador==2){
-                valorPar=auxmano->mano.Valor * 2;
-            }
-            auxmano=auxmano->sig;
-        }
-        puntaje += valorTercia + valorPar;
-        puntaje += puntajetipomano(mano);
-        return puntaje;
-    }
-    if (IsStraight(mano) || IsFlush(mano) || IsStraightFlush(mano) || IsRoyalFlush(mano)){
-        nodoMazo* aux=mano;
-        int Categoria = 0;
-        int Valor = 0;
-        while (aux != NULL){
-            if (aux->mano.Categoria > Categoria){
-                Categoria = aux->mano.Categoria;
-                Valor = aux->mano.Valor;
-                puntaje += Valor;
-            }
-            aux = aux->sig;
-        }
-        puntaje += puntajetipomano(mano);
-        return puntaje;
-    }
-    return -1; // En caso de que no se cumpla ninguna condición
-}
-*/
 
 int puntajemano(nodoMazo* mano){
     if (mano == nullptr) return 0;
-    int counts[14] = {0};   // índices 1..13
-    int val[14]    = {0};   // valor asociado a cada categoría (primera aparición)
+    int counts[14] = {0};   // índices que van del 1..13
+    int val[14]    = {0};   // valor asociado a cada categoría
     nodoMazo* t = mano;
     while (t != nullptr){
         int c = t->mano.Categoria;
@@ -655,14 +458,14 @@ int puntajemano(nodoMazo* mano){
     }
     // Straight / Flush
     if (IsStraight(mano) || IsFlush(mano)){
-        int maxValor = 0;
-        nodoMazo* u = mano;
-        while (u != nullptr){
-            if (u->mano.Valor > maxValor) maxValor = u->mano.Valor;
-            u = u->sig;
-        }
-        int puntaje = maxValor + puntajetipomano(mano);
-        return puntaje;
+    int sumaValor = 0;
+    nodoMazo* u = mano;
+    while (u != nullptr){
+    sumaValor += u->mano.Valor;
+    u = u->sig;
+    }
+    int puntaje = sumaValor + puntajetipomano(mano);
+    return puntaje;
     }
     // High Card: tomar la carta más alta
     {
@@ -684,13 +487,14 @@ int puntajemano(nodoMazo* mano){
 
 //esta funcion la hice para no hacer puros ifs dentro de otras funciones para saber qué tipo de mano se jugó
 string arrojarTipoMano(nodoMazo *mano){
-    if(IsPair(mano)) return "Par";
-    else if(IsTwoPair(mano)) return "Doble Par";
-    else if(IsThreeOfAKind(mano)) return "Tercia";
-    else if(IsFourOfAKind(mano)) return "Póker";
-    else if(IsStraight(mano)) return "Escalera";
-    else if(IsFlush(mano)) return "Color";
-    else return "Carta Más Alta";
+    if (mano == nullptr) return "Carta Más Alta";
+    if (IsFourOfAKind(mano)) return "Póker";
+    if (IsThreeOfAKind(mano)) return "Tercia";
+    if (IsTwoPair(mano)) return "Doble Par";
+    if (IsPair(mano)) return "Par";
+    if (IsStraight(mano)) return "Escalera";
+    if (IsFlush(mano)) return "Color";
+    return "Carta Más Alta";
 }
 
 //esta  funcion maneja la decision del jugador, ya sea jugar, descartar o ver las cartas disponibles y no disponibles
@@ -698,66 +502,89 @@ void decisionJugar(arbolPinta *arboles[], nodoMazo *&mazo, nodoMazo *&mano, int 
     char decision;
     int cantidad;
     cout<<"Juega: "<<endl;
-    cin>>decision;
+    if(!(cin>>decision)) return;
     if(decision=='M' || decision=='m'){
         mostrarCartas(arboles);
         return;
     }
-    cin>>cantidad;
+    if(!(cin>>cantidad)) return;
     if(cantidad<1 || cantidad>5){
         cout<<"Cantidad Invalida. "<<endl;
         return;
     }
 
-    int indices[5]; //aqui pedimos los indices que seleccionara el usuario
+    int n = listSize(mano);
+    int indices[5];
     for(int i=0; i<cantidad; i++){
-        cin>>indices[i];
-        if(indices[i]<0 || indices[i]>=listSize(mano)){
-            cout<<"Indice inválido. "<<endl;
+        if(!(cin >> indices[i])){
+            cout<<"Entrada inválida."<<endl;
             return;
+        }
+        if(indices[i] < 0 || indices[i] >= n){
+            cout<<"Indice inválido."<<endl;
+            return;
+        }
+        // evitar índices repetidos
+        for(int k=0; k<i; k++){
+            if(indices[k] == indices[i]){
+                cout<<"Indice repetido."<<endl;
+                return;
+            }
         }
     }
 
-    //rescatamos las cartas seleccionadas
-    carta seleccionadas[5];
-    nodoMazo *aux=mano;//accedemos a la mano para rescatar las cartas seleccionadas
-    int i;
-    for(i=0; i<cantidad; i++){
-        aux=mano;
-        for(int j=0; j<indices[i]; i++){
-            aux=aux->sig;
+    carta seleccionadasArr[5];
+    nodoMazo* seleccionLista = nullptr;
+    for(int k=0; k<cantidad; k++){
+        nodoMazo* aux = mano;
+        int pasos = indices[k]; // desplazamientos desde cabeza
+        for(int s=0; s<pasos; s++){
+            if(aux==NULL) break;
+            aux = aux->sig;
         }
-    }   seleccionadas[i]=aux->mano;
+        if(aux==NULL){
+            cout<<"Indice inválido al rescatar."<<endl;
+            eliminarLista(seleccionLista);
+            return;
+        }
+        seleccionadasArr[k] = aux->mano;
+        // construir lista temporal con AppendMazo (usa la misma estructura)
+        AppendMazo(seleccionLista, seleccionadasArr[k]);
+    }
 
     if(decision=='D' || decision=='d'){
         if(descartesRestantes<=0){
             cout<<"No quedan descartes. "<<endl;
+            eliminarLista(seleccionLista);
             return;
         }
-        eliminarSeleccionadas(mano, indices, cantidad);
+        eliminarSeleccionadas(mano, indices, cantidad); // elimina las cartas descartadas
         descartesRestantes--;
     }
     else if(decision=='J' || decision=='j'){
         if(manosRestantes<=0){
             cout<<"No quedan manos."<< endl;
+            eliminarLista(seleccionLista);
             return;
         }
-        string tipoMano= arrojarTipoMano(mano);
+        // evaluar y puntuar EN BASE A LAS CARTAS SELECCIONADAS
+        string tipoMano = arrojarTipoMano(seleccionLista);
+        int puntosMano = puntajemano(seleccionLista);
         cout<<"Mano Jugada: "<<tipoMano<<endl;
-        cout<<"Fichas anotadas"<<puntajetipomano(mano)<<endl;
-        puntajeTotal+=puntajetipomano(mano);
-        eliminarSeleccionadas(mano, indices, cantidad);
+        cout<<"Fichas anotadas "<< puntosMano <<endl;
+        puntajeTotal += puntosMano;
+        eliminarSeleccionadas(mano, indices, cantidad); // elimina las cartas jugadas
         manosRestantes--;
     }
     else{
         cout<<"Decision inválida."<<endl;
+        eliminarLista(seleccionLista);
         return;
     }
+
+    eliminarLista(seleccionLista); // liberar lista temporal
     Repartir(mazo, mano, tamMano, arboles);
-
-
 }
-
 //esta funcion es la que se encarga del flujo de ju8ego
 bool partida(arbolPinta* arboles[], int pozo, string nombre_ciega, bool es_jefe){
     cout<<"Comienza la "<<nombre_ciega<<", pozo a vencer: "<<pozo<<" fichas"<<endl;
@@ -794,96 +621,8 @@ bool partida(arbolPinta* arboles[], int pozo, string nombre_ciega, bool es_jefe)
 }
 
 
-
-
-//*HASTA AQUI ESCRIBÍ*//
-
-
-
-//esta funcion permite al jugador jugar o descartar su mano, seleccionando a lo más 5 cartas de su mano
-/*
-void jugarmano(arbolpinta* arboles[], nodomazo* &mano, int &manos, int &descartes){
-    int seleccion[5];
-    char palo;
-    int cartaSeleccion = 0; //cantidad de cartas a seleccionar
-    cout << "Seleccione a lo mas 5 cartas de su mano para jugar:" << endl;
-    int categoria;
-    char decision; //J para jugar, D para descartar
-    int indice[cartaSeleccion]; //indice de la(s) carta(s) a seleccionar
-    int HighCard = 50; //carta mas alta
-    int Pair = 40; //par
-    int TwoPair = 80; //doble par
-    int ThreeOfAKind = 120; //Tercia
-    int Straight = 150; //escalera
-    int Flush = 200; //color
-    int FourOfAKind = 400; //poker
-    int FullHouse = 300; //Full House
-    int StraightFlush = 500; //Escalera corrida
-    int RoyalFlush = 1000; //Escalera real
-    int FiveOfAKind = 800; //quintilla
-
-    cout << "ingrese J o para jugar o ingrese D para descartar cartas, un numero a lo mas 5 para la cantidad de cartas a seleccionar y despues, los indices de las cartas seleccionadas: ";
-    
-
-    imprimirMano(mano);
-    while (cartaSeleccion <= 5){
-        cin >> decision >> cartaSeleccion >> indice;
-
-        if (decision != 'J' & decision != 'D'){
-            cout << "Decision invalida, intente de nuevo" << endl;
-            continue;
-        }
-        if (indice < 1 || indice > 8){
-            cout << "Indice invalido, intente de nuevo" << endl;
-            continue;
-        }
-        if (decision = 'J'){
-            //se juega la(s) carta(s), estas anotan puntaje dependiendo de su categoria y la combinacion de cartas jugadas
-            nodomazo* temp = mano;
-            for (int i = 1; i < indice; i++){
-                if (temp == nullptr){
-                    cout << "Indice invalido, intente de nuevo" << endl;
-                    break;
-                }
-                temp = temp->sig;
-            }
-            if (temp == nullptr){
-                continue;
-            }
-            categoria = temp->mano.Categoria;
-            palo = temp->mano.Palo;
-            int paloIndice;
-            if (palo == 'C'){
-            //CHECKPOINT, aqui quedan los avances de hoy 10/10/2025
-            }
-        }
-    }
-}
-
-*/
-
-
-
-
-
-
-
-
-
-
-
 int main(){
-    //inicializar los arboles y el mazo
-    //arbolpinta* arboles[4] = {nullptr, nullptr, nullptr, nullptr};
-    //nodomazo* mazo = nullptr;
-    //nodomazo* mano = nullptr;
-    int manos = 4;
-    int descartes = 3;
-    //barajar(mazo);
-    //repartir(mazo, mano);
-    //imprimirMano(mano);
-    //jugarmano(arboles, mano, manos, descartes);
-
+    
     arbolPinta *arboles[4];
     crearArboles(arboles);
     cout<<"Bienvenido al maravilloso juevo de DataBalatro!"<<endl;
