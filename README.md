@@ -17,3 +17,6 @@ Tarea 2 de Estructuras de datos USM
 Para esta tarea se utilizó el compilador g++ usando la terminal de Ubuntu y el WSL Debian. El proyecto se trata, básicamente, de crear una versión del famoso juego Balatro.
 
 La compilación, ejecución y borrado se realizará mediante un archivo de tipo makefile.
+
+# nota extra:
+se implementó en el repositorio .gitattributes para evitar este warning "This diff contains a change in line endings from 'LF' to 'CRLF'."
