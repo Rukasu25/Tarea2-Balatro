@@ -3,7 +3,7 @@
 #variables
 CC = g++
 CFLAGS = -Wall -std=c++11
-TARGET = DataBalatro
+TARGET = main
 
 #regla por defecto: compilar el programa
 all: $(TARGET)
